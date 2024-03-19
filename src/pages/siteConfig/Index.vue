@@ -1,33 +1,47 @@
 <template>
   <div class="container">
     <div class="control">
-      <el-button type="primary" plain icon="SetUp" @click="changeMode">{{ mode === 'table' ? '切换卡片模式' : '切换列表模式'
-        }}</el-button>
+      <!-- <el-button type="primary" plain icon="SetUp" @click="changeMode">{{ mode === 'table' ? '切换卡片模式' : '切换列表模式'
+        }}</el-button> -->
       <el-button type="success" plain icon="Plus">添加</el-button>
       <el-button type="danger" plain icon="Delete">批量删除</el-button>
       <el-button type="warning" plain icon="BrushFilled">清空所有缓存</el-button>
     </div>
     <div class="main">
-      <el-table v-if="mode === 'table'" :data="tableData" style="width: 100%" border>
-        <el-table-column type="selection" />
-        <el-table-column fixed prop="name" label="站点名称" />
-        <el-table-column prop="address" label="站点地址" />
-        <el-table-column prop="api" label="接口地址" />
-        <el-table-column prop="passkey" label="passkey密钥" />
-        <el-table-column prop="interval" label="请求间隔(s)" />
-        <el-table-column prop="uploadLimit" label="上传限速" />
-        <el-table-column prop="downloadLimit" label="下载限速" />
-        <el-table-column fixed="right" label="操作面板" align="center" width="260">
-          <template #default="scope">
-            <div class="action">
-              <el-button size="small" type="primary" icon="Edit">编辑</el-button>
-              <el-button size="small" type="danger" icon="Delete">删除</el-button>
-              <el-button size="small" type="warning" icon="BrushFilled">清空缓存</el-button>
-            </div>
+      <rp-table :data="tableData" :tableEl="tableEl" :pagination="pagination" :selection="true"
+        @paginationChange="paginationChange" @selectionChange="selectionChange">
+        <template #sites="scope">
+          <span>{{ scope.row.sites.map(i => i.name).join('、') }}</span>
+        </template>
+        <template #state="scope">
+          <el-switch v-model="scope.row.state" inline-prompt active-icon="Check" inactive-icon="Close" />
+        </template>
+        <template #action="scope">
+          <el-dropdown v-if="device === 'mobile'" trigger="click">
+            <el-button type="primary" text icon="Setting" />
+            <template #dropdown>
+              <el-dropdown-menu>
+                <el-dropdown-item>
+                  <el-button size="small" type="primary" icon="Edit">编辑</el-button>
+                </el-dropdown-item>
+                <el-dropdown-item>
+                  <el-button size="small" type="danger" icon="Delete">删除</el-button>
+                </el-dropdown-item>
+                <el-dropdown-item>
+                  <el-button size="small" type="warning" icon="BrushFilled">清空缓存</el-button>
+                </el-dropdown-item>
+              </el-dropdown-menu>
+            </template>
+          </el-dropdown>
+          <template v-else>
+            <el-button size="small" type="primary" icon="Edit">编辑</el-button>
+            <el-button size="small" type="danger" icon="Delete">删除</el-button>
+            <el-button size="small" type="warning" icon="BrushFilled">清空缓存</el-button>
           </template>
-        </el-table-column>
-      </el-table>
-      <div v-else class="card-container">
+        </template>
+      </rp-table>
+
+      <!-- <div v-else class="card-container">
         <div v-for="(item, index) in tableData" :key="index" class="card">
           <div class="header">
             <div class="site-title">
@@ -55,17 +69,14 @@
             </el-button>
           </div>
         </div>
-      </div>
-    </div>
-    <div class="pagination">
-      <el-pagination v-model:current-page="pagination.current" v-model:page-size="pagination.pageSize" background
-        :page-sizes="[10, 50, 100, 200]" :small="true" layout="total, sizes, prev, pager, next, jumper"
-        :total="pagination.total" @size-change="handleSizeChange" @current-change="handleCurrentChange" />
+      </div> -->
     </div>
   </div>
 </template>
 
 <script setup>
+import useAppStore from '@/store/modules/app'
+const device = computed(() => useAppStore().device);
 const mode = ref('table')
 const tableData = ref([
   {
@@ -78,21 +89,68 @@ const tableData = ref([
     downloadLimit: '20'
   }
 ])
+
+const tableEl = ref([
+  {
+    title: '站点名称',
+    dataIndex: 'name',
+    fixed: 'left'
+  },
+  {
+    title: '站点地址',
+    dataIndex: 'address'
+  },
+  {
+    title: '接口地址',
+    dataIndex: 'api'
+  },
+  {
+    title: 'passkey密钥',
+    dataIndex: 'passkey'
+  },
+  {
+    title: '请求间隔(s)',
+    dataIndex: 'interval'
+  },
+  {
+    title: '上传限速',
+    dataIndex: 'uploadLimit'
+  },
+  {
+    title: '下载限速',
+    dataIndex: 'downloadLimit'
+  },
+  {
+    title: '操作',
+    dataIndex: 'action',
+    type: 'otherTag',
+    width: device.value === 'mobile' ? 60 : 280,
+    align: 'center',
+    fixed: 'right'
+  },
+])
+
 const pagination = ref({
   current: 1,
   pageSize: 10,
   total: 0
 })
 
-const handleSizeChange = (val) => {
-  console.log(val);
-}
-const handleCurrentChange = (val) => {
-  console.log(val);
-}
 const changeMode = () => {
   mode.value = mode.value === 'table' ? 'card' : 'table'
 }
+
+const paginationChange = (val) => {
+
+}
+const selectionChange = val => {
+  console.log(val)
+}
+
+watch(() => device.value, (val) => {
+  const action = tableEl.value.find(i => i.dataIndex === 'action')
+  action.width = val === 'mobile' ? 60 : 280
+})
 </script>
 
 <style lang="scss" scoped>

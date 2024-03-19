@@ -1,136 +1,167 @@
 <template>
   <div class="container">
     <div class="info">
-
+      <rp-search :elements="elements" @submit="submit"></rp-search>
     </div>
     <div class="main">
-      <el-table :data="tableData" style="width: 100%" border>
-        <el-table-column type="selection" />
-        <el-table-column fixed prop="name" label="名称" />
-        <el-table-column prop="type" label="类型" />
-        <el-table-column prop="address" label="地址" />
-        <el-table-column prop="port" label="端口" />
-        <el-table-column prop="username" label="登陆用户名" />
-        <el-table-column prop="password" label="登陆密码" />
-        <el-table-column prop="jump" label="跳过哈希校验" />
-        <el-table-column prop="autoStart" label="自动开始" />
-        <el-table-column prop="sites" label="辅种站点">
-          <template #default="scope">
-            <span>{{ scope.row.sites.map(i => i.name).join('、') }}</span>
+      <rp-table :data="tableData" :tableEl="tableEl" :pagination="pagination" :selection="true"
+        @paginationChange="paginationChange" @selectionChange="selectionChange">
+        <template #sites="scope">
+          <span>{{ scope.row.sites.map(i => i.name).join('、') }}</span>
+        </template>
+        <template #state="scope">
+          <el-switch v-model="scope.row.state" inline-prompt active-icon="Check" inactive-icon="Close" />
+        </template>
+        <template #action="scope">
+          <el-dropdown v-if="device === 'mobile'" trigger="click">
+            <el-button type="primary" text icon="Setting" />
+            <template #dropdown>
+              <el-dropdown-menu>
+                <el-dropdown-item>
+                  <el-button size="small" type="success" icon="VideoPlay">立即执行一次</el-button>
+                </el-dropdown-item>
+                <el-dropdown-item>
+                  <el-button size="small" type="primary" icon="Edit">编辑</el-button>
+                </el-dropdown-item>
+                <el-dropdown-item>
+                  <el-button size="small" type="danger" icon="Delete">删除</el-button>
+                </el-dropdown-item>
+                <el-dropdown-item>
+                  <el-button size="small" type="warning" icon="Memo">日志</el-button>
+                </el-dropdown-item>
+              </el-dropdown-menu>
+            </template>
+          </el-dropdown>
+          <template v-else>
+            <el-button size="small" type="success" icon="VideoPlay">立即执行一次</el-button>
+            <el-button size="small" type="primary" icon="Edit">编辑</el-button>
+            <el-button size="small" type="danger" icon="Delete">删除</el-button>
+            <el-button size="small" type="warning" icon="Memo">日志</el-button>
           </template>
-        </el-table-column>
-        <el-table-column prop="state" label="状态">
-          <template #default="scope">
-            <el-switch v-model="scope.row.state" class="mt-2" style="margin-left: 24px" inline-prompt
-              active-icon="Check" inactive-icon="Close" />
-          </template>
-        </el-table-column>
-        <el-table-column fixed="right" label="操作面板" align="center" width="200">
-          <template #default="scope">
-            <div class="action">
-              <el-button size="small" type="success" icon="Link">测试</el-button>
-              <el-button size="small" type="primary" icon="Edit">编辑</el-button>
-              <el-button size="small" type="danger" icon="Delete">删除</el-button>
-            </div>
-          </template>
-        </el-table-column>
-      </el-table>
-    </div>
-    <div class="pagination">
-      <el-pagination v-model:current-page="pagination.current" v-model:page-size="pagination.pageSize" background
-        :page-sizes="[10, 50, 100, 200]" :small="true" layout="total, sizes, prev, pager, next, jumper"
-        :total="pagination.total" @size-change="handleSizeChange" @current-change="handleCurrentChange" />
+        </template>
+      </rp-table>
     </div>
   </div>
 </template>
 
 <script setup>
+import useAppStore from '@/store/modules/app'
+const device = computed(() => useAppStore().device);
+const mode = ref('table')
 const tableData = ref([
   {
-    name: 'transmission',
-    type: 'TR',
-    address: '192.168.1.1',
-    port: '9091',
-    username: 'test',
-    password: 'test',
-    jump: true,
-    autoStart: true,
-    sites: [{ name: '憨憨', value: 'hhantop' }, { name: '麒麟', value: 'hdkyl' }],
-    state: true,
+    taskName: '辅种',
+    taskType: '循环任务',
+    order: 'cron',
+    queue: '计划执行：2024年03月19日 19:44:21（每28800秒）',
+    time: '11:43:16(耗时64.9984秒) 已执行34次',
+    result: '最新错误信息->站点访问超过4秒'
+  }
+])
+const tableEl = ref([
+  {
+    title: '任务名称',
+    dataIndex: 'taskName',
+    fixed: 'left'
   },
   {
-    name: 'transmission',
-    type: 'TR',
-    address: '192.168.1.1',
-    port: '9091',
-    username: 'test',
-    password: 'test',
-    jump: true,
-    autoStart: true,
-    sites: [{ name: '憨憨', value: 'hhantop' }, { name: '麒麟', value: 'hdkyl' }],
-    state: true,
+    title: '任务类型',
+    dataIndex: 'taskType'
   },
   {
-    name: 'transmission',
-    type: 'TR',
-    address: '192.168.1.1',
-    port: '9091',
-    username: 'test',
-    password: 'test',
-    jump: true,
-    autoStart: true,
-    sites: [{ name: '憨憨', value: 'hhantop' }, { name: '麒麟', value: 'hdkyl' }],
-    state: true,
+    title: '执行指令',
+    dataIndex: 'order'
   },
   {
-    name: 'transmission',
-    type: 'TR',
-    address: '192.168.1.1',
-    port: '9091',
-    username: 'test',
-    password: 'test',
-    jump: true,
-    autoStart: true,
-    sites: [{ name: '憨憨', value: 'hhantop' }, { name: '麒麟', value: 'hdkyl' }],
-    state: true,
+    title: '计划执行',
+    dataIndex: 'queue'
   },
   {
-    name: 'transmission',
-    type: 'TR',
-    address: '192.168.1.1',
-    port: '9091',
-    username: 'test',
-    password: 'test',
-    jump: true,
-    autoStart: true,
-    sites: [{ name: '憨憨', value: 'hhantop' }, { name: '麒麟', value: 'hdkyl' }],
-    state: true,
+    title: '执行时间',
+    dataIndex: 'time'
   },
   {
-    name: 'transmission',
-    type: 'TR',
-    address: '192.168.1.1',
-    port: '9091',
-    username: 'test',
-    password: 'test',
-    jump: true,
-    autoStart: true,
-    sites: [{ name: '憨憨', value: 'hhantop' }, { name: '麒麟', value: 'hdkyl' }],
-    state: true,
+    title: '执行结果',
+    dataIndex: 'result'
+  },
+  {
+    title: '操作',
+    dataIndex: 'action',
+    type: 'otherTag',
+    width: device.value === 'mobile' ? 60 : 400,
+    align: 'center',
+    fixed: 'right'
   },
 ])
+
 const pagination = ref({
   current: 1,
   pageSize: 10,
   total: 0
 })
 
-const handleSizeChange = (val) => {
-  console.log(val);
+const elements = ref([
+  {
+    type: 'input',
+    label: '编号名称',
+    key: 'name',
+    value: ''
+  },
+  {
+    type: 'input',
+    label: '任务指令',
+    key: 'order',
+    value: ''
+  },
+  {
+    type: 'select',
+    label: '任务状态',
+    key: 'state',
+    value: '',
+    options: [
+      {
+        label: '等待处理',
+        value: '0'
+      },
+      {
+        label: '正在处理',
+        value: '1'
+      },
+      {
+        label: '处理完成',
+        value: '2'
+      },
+      {
+        label: '处理失败',
+        value: '3'
+      },
+    ]
+  },
+  {
+    type: 'datePicker',
+    mode: 'daterange',
+    label: '计划时间',
+    key: 'time',
+    value: ''
+  }
+])
+
+const paginationChange = (val) => {
+
 }
-const handleCurrentChange = (val) => {
-  console.log(val);
+const selectionChange = val => {
+  console.log(val)
 }
+
+watch(() => device.value, (val) => {
+  const action = tableEl.value.find(i => i.dataIndex === 'action')
+  action.width = val === 'mobile' ? 60 : 400
+})
+
+const submit = (val) => {
+  console.log(val)
+}
+
 </script>
 
 <style lang="scss" scoped>
@@ -138,6 +169,7 @@ const handleCurrentChange = (val) => {
   height: 100%;
   background-color: var(--el-bg-color);
   padding: 10px;
+  padding-top: 0;
   display: flex;
   flex-direction: column;
 }
@@ -146,6 +178,7 @@ const handleCurrentChange = (val) => {
   display: flex;
   justify-content: flex-end;
   margin-bottom: 8px;
+  border-bottom: 1px dashed var(--el-border-color);
 }
 
 .main {

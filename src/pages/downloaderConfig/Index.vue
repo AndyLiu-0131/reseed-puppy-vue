@@ -5,48 +5,44 @@
       <el-button type="danger" plain icon="Delete">批量删除</el-button>
       <el-button type="danger" icon="Failed">删除所有</el-button>
     </div>
-    <div class="main">
-      <el-table :data="tableData" style="width: 100%" border>
-        <el-table-column type="selection" />
-        <el-table-column fixed prop="name" label="名称" />
-        <el-table-column prop="type" label="类型" />
-        <el-table-column prop="address" label="地址" />
-        <el-table-column prop="port" label="端口" />
-        <el-table-column prop="username" label="登陆用户名" />
-        <el-table-column prop="password" label="登陆密码" />
-        <el-table-column prop="jump" label="跳过哈希校验" />
-        <el-table-column prop="autoStart" label="自动开始" />
-        <el-table-column prop="sites" label="辅种站点">
-          <template #default="scope">
-            <span>{{ scope.row.sites.map(i => i.name).join('、') }}</span>
+    <rp-table :data="tableData" :tableEl="tableEl" :pagination="pagination" :selection="true"
+      @paginationChange="paginationChange" @selectionChange="selectionChange">
+      <template #sites="scope">
+        <span>{{ scope.row.sites.map(i => i.name).join('、') }}</span>
+      </template>
+      <template #state="scope">
+        <el-switch v-model="scope.row.state" inline-prompt active-icon="Check" inactive-icon="Close" />
+      </template>
+      <template #action="scope">
+        <el-dropdown v-if="device === 'mobile'" trigger="click">
+          <el-button type="primary" text icon="Setting" />
+          <template #dropdown>
+            <el-dropdown-menu>
+              <el-dropdown-item>
+                <el-button size="small" type="success" icon="Link">测试</el-button>
+              </el-dropdown-item>
+              <el-dropdown-item>
+                <el-button size="small" type="primary" icon="Edit">编辑</el-button>
+              </el-dropdown-item>
+              <el-dropdown-item>
+                <el-button size="small" type="danger" icon="Delete">删除</el-button>
+              </el-dropdown-item>
+            </el-dropdown-menu>
           </template>
-        </el-table-column>
-        <el-table-column prop="state" label="状态">
-          <template #default="scope">
-            <el-switch v-model="scope.row.state" class="mt-2" style="margin-left: 24px" inline-prompt
-              active-icon="Check" inactive-icon="Close" />
-          </template>
-        </el-table-column>
-        <el-table-column fixed="right" label="操作面板" align="center" width="200">
-          <template #default="scope">
-            <div class="action">
-              <el-button size="small" type="success" icon="Link">测试</el-button>
-              <el-button size="small" type="primary" icon="Edit">编辑</el-button>
-              <el-button size="small" type="danger" icon="Delete">删除</el-button>
-            </div>
-          </template>
-        </el-table-column>
-      </el-table>
-    </div>
-    <div class="pagination">
-      <el-pagination v-model:current-page="pagination.current" v-model:page-size="pagination.pageSize" background
-        :page-sizes="[10, 50, 100, 200]" :small="true" layout="total, sizes, prev, pager, next, jumper"
-        :total="pagination.total" @size-change="handleSizeChange" @current-change="handleCurrentChange" />
-    </div>
+        </el-dropdown>
+        <template v-else>
+          <el-button size="small" type="success" icon="Link">测试</el-button>
+          <el-button size="small" type="primary" icon="Edit">编辑</el-button>
+          <el-button size="small" type="danger" icon="Delete">删除</el-button>
+        </template>
+      </template>
+    </rp-table>
   </div>
 </template>
 
 <script setup>
+import useAppStore from '@/store/modules/app'
+const device = computed(() => useAppStore().device);
 const tableData = ref([
   {
     name: 'transmission',
@@ -127,12 +123,72 @@ const pagination = ref({
   total: 0
 })
 
-const handleSizeChange = (val) => {
-  console.log(val);
+const tableEl = ref([
+  {
+    title: '名称',
+    dataIndex: 'name',
+    fixed: 'left'
+  },
+  {
+    title: '类型',
+    dataIndex: 'type'
+  },
+  {
+    title: '地址',
+    dataIndex: 'address'
+  },
+  {
+    title: '端口',
+    dataIndex: 'port'
+  },
+  {
+    title: '登陆用户名',
+    dataIndex: 'username'
+  },
+  {
+    title: '登陆密码',
+    dataIndex: 'password'
+  },
+  {
+    title: '跳过哈希校验',
+    dataIndex: 'jump'
+  },
+  {
+    title: '自动开始',
+    dataIndex: 'autoStart'
+  },
+  {
+    title: '辅种站点',
+    dataIndex: 'sites',
+    type: 'otherTag'
+  },
+  {
+    title: '状态',
+    dataIndex: 'state',
+    type: 'otherTag',
+    align: 'center'
+  },
+  {
+    title: '操作',
+    dataIndex: 'action',
+    type: 'otherTag',
+    width: device.value === 'mobile' ? 60 : 280,
+    align: 'center',
+    fixed: 'right'
+  },
+])
+
+const paginationChange = (val) => {
+
 }
-const handleCurrentChange = (val) => {
-  console.log(val);
+const selectionChange = val => {
+  console.log(val)
 }
+
+watch(() => device.value, (val) => {
+  const action = tableEl.value.find(i => i.dataIndex === 'action')
+  action.width = val === 'mobile' ? 60 : 280
+})
 </script>
 
 <style lang="scss" scoped>
