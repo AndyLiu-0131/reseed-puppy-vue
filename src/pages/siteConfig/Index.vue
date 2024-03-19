@@ -149,7 +149,7 @@ const selectionChange = val => {
 
 watch(() => device.value, (val) => {
   const action = tableEl.value.find(i => i.dataIndex === 'action')
-  action.width = val === 'mobile' ? 60 : 280
+  action.width = val === 'mobile' ? 60 : 280 
 })
 </script>
 

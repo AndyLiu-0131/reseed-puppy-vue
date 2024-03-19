@@ -2,7 +2,7 @@
   <div class="">404 not found</div>
 </template>
 
-<script lang="ts" setup>
+<script setup>
 defineOptions({
   name: '',
 })

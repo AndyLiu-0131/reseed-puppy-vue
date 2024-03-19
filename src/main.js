@@ -17,6 +17,9 @@ import router from '@/router'
 import store from '@/store'
 import { Icon } from '@iconify/vue'
 
+// 引入全局组件注册函数
+import registerComponent from '@/components/index.js'
+
 const app = createApp(App)
 
 Object.entries(icons).forEach(([key, component]) => {
@@ -25,6 +28,7 @@ Object.entries(icons).forEach(([key, component]) => {
 app.use(ElementPlus, {
   locale: zhCn,
 })
+registerComponent(app)
 app.component('Icon', Icon)
 app.use(router)
 app.use(store)
